@@ -3,10 +3,16 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import os
 import time
+import csv
+from urllib.request import urlopen
+from urllib.parse import quote_plus
 
-path = os.getcwd() + "/7th/chromedriver"
+
+
+path = os.getcwd() + "/chromedriver.exe"
 driver = webdriver.Chrome(path)
 title = []
+road = []
 
 try :
     driver.get("http://www.seoul.go.kr/coronaV/coronaStatus.do?menu_code=01#route_page_top")
@@ -15,28 +21,35 @@ try :
     element = driver.find_element_by_class_name("move-tab")
     element.click()
 
-    html = driver.page_source
-    bs = BeautifulSoup(html, "html.parser")
 
-    temp = bs.find("div", class_ = "dataTables_paginate paging_simple_numbers")
-
-    pages = temp.find_all("a")
-
-    for page in pages :
-        print(page.text)
-
-
-    for i in range(9) : 
-        time.sleep(1)
+    for i in range(3) :
+        driver.implicitly_wait(10)
+        time.sleep(5)
 
         html = driver.page_source
         bs = BeautifulSoup(html, "html.parser")
 
-        conts = bs.find("div", class_ = "status-confirm").find_all("tr")
+        conts = bs.findAll("div", class_ = "status-confirm")[3]
+        
 
-        title.append("page" + str(i + 1))
-        for c in conts :
-            title.append(c.find("td", class_ = "tdl").find_all("p").find("b", "span").text)
+
+         
+
+
+        for c in conts.findAll("td", class_ = "tdl") :
+            print(c.text)
+            road.append(c.text)
+            
+        ele = driver.find_elements_by_xpath('//*[@id="DataTables_Table_0_next"]')[1]
+        driver.execute_script("arguments[0].click();", ele)
+        driver.implicitly_wait(10)
+
+
+            
+
+
+        
+
         
         
 
@@ -50,3 +63,11 @@ finally :
             
 
     driver.quit()
+
+
+f = open('corona.csv', 'w', encoding = 'utf-8-sig', newline = '')
+csvwriter = csv.writer(f)
+for n in road :
+    csvwriter.writerow(n)
+f. close()
+
